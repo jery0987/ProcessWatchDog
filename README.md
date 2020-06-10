@@ -1,3 +1,3 @@
 # ProcessWatchDog
 多程序監看看門狗
-![image](picture or gif url)
+![image](https://raw.githubusercontent.com/jery0987/ProcessWatchDog/master/image.png)
