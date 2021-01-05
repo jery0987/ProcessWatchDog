@@ -50,9 +50,9 @@ namespace ProcessWatchDog
 
         private void initData()
         {
-            if (File.Exists(Application.StartupPath + "\\data.dat"))
+            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "data.dat"))
             {
-                using (Stream input = File.OpenRead(Application.StartupPath + "\\data.dat"))
+                using (Stream input = File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "data.dat"))
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
                     itemlist = (List<WatchItem>)formatter.Deserialize(input);
@@ -66,9 +66,9 @@ namespace ProcessWatchDog
             {
                 itemlist = new List<WatchItem>();
             }
-            if (File.Exists(Application.StartupPath + "\\log.dat"))
+            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "log.dat"))
             {
-                using (Stream input = File.OpenRead(Application.StartupPath + "\\log.dat"))
+                using (Stream input = File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "log.dat"))
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
                     loglist = (List<LogItem>)formatter.Deserialize(input);
@@ -257,14 +257,14 @@ namespace ProcessWatchDog
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            using (Stream output = File.Create("data.dat"))
+            using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "data.dat"))
             {
                 BinaryFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(output, itemlist);
                 output.Close();
             }
 
-            using (Stream output = File.Create("log.dat"))
+            using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "log.dat"))
             {
                 BinaryFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(output, loglist);
@@ -399,7 +399,7 @@ namespace ProcessWatchDog
             }
             try
             {
-                using (Stream output = File.Create("data.dat"))
+                using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "data.dat"))
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(output, itemlist);
@@ -410,7 +410,7 @@ namespace ProcessWatchDog
 
             try
             {
-                using (Stream output = File.Create("log.dat"))
+                using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "log.dat"))
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(output, loglist);
