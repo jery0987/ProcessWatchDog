@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
@@ -22,10 +23,14 @@ namespace ProcessWatchDog
         private bool isStartup = false;
         NotifyIcon notifyIcon1 = new NotifyIcon();
         System.Threading.Timer CheckTimer;
+        private static string exePath = "";
 
         public Form1(string[] args)
         {
             InitializeComponent();
+
+            exePath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
             initData();
             reloadList();
             notifyIcon1.Text = "程式看門狗";
@@ -50,33 +55,87 @@ namespace ProcessWatchDog
 
         private void initData()
         {
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "data.dat"))
+            if (File.Exists(exePath + @"\data.dat"))
             {
-                using (Stream input = File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "data.dat"))
+                using (Stream input = File.OpenRead(exePath + @"\data.dat"))
                 {
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    itemlist = (List<WatchItem>)formatter.Deserialize(input);
-                    foreach (WatchItem item in itemlist)
-                    {
-                        item.init();
+					try
+					{
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        itemlist = (List<WatchItem>)formatter.Deserialize(input);
+                        foreach (WatchItem item in itemlist)
+                        {
+                            item.init();
+                        }
+                    }
+					catch (Exception)
+					{
+                        itemlist = new List<WatchItem>();
                     }
                 }
             }
             else
             {
-                itemlist = new List<WatchItem>();
-            }
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "log.dat"))
-            {
-                using (Stream input = File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "log.dat"))
+                if (File.Exists(exePath + @"\data.dat.temp"))
                 {
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    loglist = (List<LogItem>)formatter.Deserialize(input);
+                    using (Stream input = File.OpenRead(exePath + @"\data.dat.temp"))
+                    {
+						try
+						{
+                            BinaryFormatter formatter = new BinaryFormatter();
+                            itemlist = (List<WatchItem>)formatter.Deserialize(input);
+                            foreach (WatchItem item in itemlist)
+                            {
+                                item.init();
+                            }
+                        }
+						catch (Exception)
+						{
+                            itemlist = new List<WatchItem>();
+                        }
+                    }
+				}
+				else
+				{
+                    itemlist = new List<WatchItem>();
+                }
+            }
+            if (File.Exists(exePath + @"\log.dat"))
+            {
+                using (Stream input = File.OpenRead(exePath + @"\log.dat"))
+                {
+					try
+					{
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        loglist = (List<LogItem>)formatter.Deserialize(input);
+                    }
+					catch (Exception)
+					{
+                        loglist = new List<LogItem>();
+                    }
                 }
             }
             else
             {
-                loglist = new List<LogItem>();
+                if (File.Exists(exePath + @"\log.dat.temp"))
+                {
+                    using (Stream input = File.OpenRead(exePath + @"\log.dat.temp"))
+                    {
+                        try
+                        {
+                            BinaryFormatter formatter = new BinaryFormatter();
+                            loglist = (List<LogItem>)formatter.Deserialize(input);
+                        }
+                        catch (Exception)
+                        {
+                            loglist = new List<LogItem>();
+                        }
+                    }
+				}
+				else
+				{
+                    loglist = new List<LogItem>();
+                }
             }
         }
 
@@ -257,19 +316,25 @@ namespace ProcessWatchDog
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "data.dat"))
+            using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "data.dat.temp"))
             {
                 BinaryFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(output, itemlist);
                 output.Close();
             }
+            File.Delete(AppDomain.CurrentDomain.BaseDirectory + "data.dat");
+            File.Copy(AppDomain.CurrentDomain.BaseDirectory + "data.dat.temp", AppDomain.CurrentDomain.BaseDirectory + "data.dat", true);
+            File.Delete(AppDomain.CurrentDomain.BaseDirectory + "data.dat.temp");
 
-            using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "log.dat"))
+            using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "log.dat.temp"))
             {
                 BinaryFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(output, loglist);
                 output.Close();
             }
+            File.Delete(AppDomain.CurrentDomain.BaseDirectory + "log.dat");
+            File.Copy(AppDomain.CurrentDomain.BaseDirectory + "log.dat.temp", AppDomain.CurrentDomain.BaseDirectory + "log.dat", true);
+            File.Delete(AppDomain.CurrentDomain.BaseDirectory + "log.dat.temp");
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -399,23 +464,29 @@ namespace ProcessWatchDog
             }
             try
             {
-                using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "data.dat"))
+                using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "data.dat.temp"))
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(output, itemlist);
                     output.Close();
                 }
+                File.Delete(AppDomain.CurrentDomain.BaseDirectory + "data.dat");
+                File.Copy(AppDomain.CurrentDomain.BaseDirectory + "data.dat.temp", AppDomain.CurrentDomain.BaseDirectory + "data.dat", true);
+                File.Delete(AppDomain.CurrentDomain.BaseDirectory + "data.dat.temp");
             }
             catch (Exception){}
 
             try
             {
-                using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "log.dat"))
+                using (Stream output = File.Create(AppDomain.CurrentDomain.BaseDirectory + "log.dat.temp"))
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(output, loglist);
                     output.Close();
                 }
+                File.Delete(AppDomain.CurrentDomain.BaseDirectory + "log.dat");
+                File.Copy(AppDomain.CurrentDomain.BaseDirectory + "log.dat.temp", AppDomain.CurrentDomain.BaseDirectory + "log.dat", true);
+                File.Delete(AppDomain.CurrentDomain.BaseDirectory + "log.dat.temp");
             }
             catch (Exception){}
         }
